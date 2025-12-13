@@ -11,15 +11,15 @@ const Index = () => {
   const { bookings, turfs } = useApp();
 
   const stats = useMemo(() => {
-    const totalBookings = bookings.filter((b) => b.status !== 'cancelled').length;
-    const todaysBookings = bookings.filter(
+    const totalBookings = bookings?.filter((b) => b.status !== 'cancelled').length;
+    const todaysBookings = bookings?.filter(
       (b) => isToday(new Date(b.date)) && b.status !== 'cancelled'
     ).length;
-    const pendingBalance = bookings.reduce((acc, b) => acc + b.amountBalance, 0);
+    const pendingBalance = bookings?.reduce((acc, b) => acc + b.amountBalance, 0);
     const activeRecurring = new Set(
-      bookings.filter((b) => b.recurringGroupId).map((b) => b.recurringGroupId)
+      bookings?.filter((b) => b.recurringGroupId).map((b) => b.recurringGroupId)
     ).size;
-    const totalRevenue = bookings.reduce((acc, b) => acc + b.amountPaid, 0);
+    const totalRevenue = bookings?.reduce((acc, b) => acc + b.amountPaid, 0);
 
     return {
       totalBookings,
@@ -58,7 +58,7 @@ const Index = () => {
           />
           <StatsCard
             title="Pending Balance"
-            value={`₹${stats.pendingBalance.toLocaleString()}`}
+            value={`₹${stats.pendingBalance?.toLocaleString()}`}
             icon={IndianRupee}
             className="animate-fade-in opacity-0 stagger-3"
           />
@@ -86,13 +86,13 @@ const Index = () => {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
               <p className="text-4xl font-bold text-foreground">
-                ₹{stats.totalRevenue.toLocaleString()}
+                ₹{stats.totalRevenue?.toLocaleString()}
               </p>
             </div>
             <div className="text-right">
               <p className="text-sm font-medium text-muted-foreground">Active Turfs</p>
               <p className="text-4xl font-bold text-primary">
-                {turfs.filter((t) => t.isActive).length}
+                {turfs?.filter((t) => t.isActive).length}
               </p>
             </div>
           </div>

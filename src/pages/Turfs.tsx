@@ -9,7 +9,8 @@ import { Plus, MapPin } from 'lucide-react';
 import { Turf } from '@/types';
 
 const Turfs = () => {
-  const { turfs } = useApp();
+  const { 
+    turfs } = useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const [formOpen, setFormOpen] = useState(false);
   const [editingTurf, setEditingTurf] = useState<Turf | null>(null);
@@ -49,7 +50,7 @@ const Turfs = () => {
         </div>
 
         {/* Turfs Grid */}
-        {turfs.length === 0 ? (
+        {turfs?.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 py-16 animate-fade-in opacity-0">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
               <MapPin className="h-8 w-8 text-muted-foreground" />
@@ -65,9 +66,9 @@ const Turfs = () => {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {turfs.map((turf, index) => (
+            {turfs?.map((turf, index) => (
               <div
-                key={turf.id}
+                key={turf._id}
                 className={`animate-fade-in opacity-0 stagger-${Math.min(index + 1, 5)}`}
               >
                 <TurfCard turf={turf} onEdit={handleEdit} />

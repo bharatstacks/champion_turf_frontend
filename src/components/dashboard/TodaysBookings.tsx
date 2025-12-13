@@ -7,11 +7,10 @@ import { Badge } from '@/components/ui/badge';
 export function TodaysBookings() {
   const { bookings, turfs } = useApp();
 
-  const todaysBookings = bookings
-    .filter((booking) => isToday(new Date(booking.date)))
+  const todaysBookings = bookings?.filter((booking) => isToday(new Date(booking.date)))
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const getTurf = (turfId: string) => turfs.find((t) => t.id === turfId);
+  const getTurf = (turfId: string) => turfs?.find((t) => t._id === turfId);
 
   return (
     <div className="rounded-xl border border-border bg-card">
@@ -23,7 +22,7 @@ export function TodaysBookings() {
       </div>
 
       <div className="divide-y divide-border">
-        {todaysBookings.length === 0 ? (
+        {todaysBookings?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
               <Clock className="h-8 w-8 text-muted-foreground" />
@@ -32,7 +31,7 @@ export function TodaysBookings() {
             <p className="text-xs text-muted-foreground/70">Schedule some activities!</p>
           </div>
         ) : (
-          todaysBookings.map((booking, index) => {
+          todaysBookings?.map((booking, index) => {
             const turf = getTurf(booking.turfId);
             return (
               <div

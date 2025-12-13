@@ -62,13 +62,12 @@ const Bookings = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const getTurf = (turfId: string) => turfs.find((t) => t.id === turfId);
+  const getTurf = (turfId: string) => turfs?.find((t) => t._id === turfId);
 
-  const filteredBookings = bookings
-    .filter((booking) => {
+  const filteredBookings = bookings?.filter((booking) => {
       const matchesSearch =
-        booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.phoneNumber.includes(searchTerm);
+        booking?.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking?.phoneNumber?.includes(searchTerm);
       const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
       const matchesTurf = turfFilter === 'all' || booking.turfId === turfFilter;
       const matchesRecurring = recurringFilter === null || booking.isRecurring === recurringFilter;
@@ -150,8 +149,8 @@ const Bookings = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Turfs</SelectItem>
-              {turfs.map((turf) => (
-                <SelectItem key={turf.id} value={turf.id}>
+              {turfs?.map((turf) => (
+                <SelectItem key={turf._id} value={turf._id}>
                   {turf.name}
                 </SelectItem>
               ))}
@@ -186,7 +185,7 @@ const Bookings = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredBookings.length === 0 ? (
+              {filteredBookings?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -196,7 +195,7 @@ const Bookings = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredBookings.map((booking) => {
+                filteredBookings?.map((booking) => {
                   const turf = getTurf(booking.turfId);
                   return (
                     <TableRow key={booking.id}>

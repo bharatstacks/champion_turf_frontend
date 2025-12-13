@@ -361,7 +361,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   // ----- FILTER BY TURF + TURF TYPE -----
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
-      const turf = turfs.find((t) => t.id === b.turfId);
+      const turf = turfs.find((t) => t._id === b.turfId);
 
       const turfMatch = turfFilter === 'all' || b.turfId === turfFilter;
 
@@ -459,7 +459,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
               const endMin = timeStringToMinutes(booking.endTime);
               const top = (startMin / TOTAL_MINUTES) * 100;
               const height = ((endMin - startMin) / TOTAL_MINUTES) * 100;
-              const turf = turfs.find((t) => t.id === booking.turfId);
+              const turf = turfs.find((t) => t._id === booking.turfId);
 
               return (
                 <button
@@ -611,7 +611,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                   const top = (startMin / TOTAL_MINUTES) * 100;
                   const height =
                     ((endMin - startMin) / TOTAL_MINUTES) * 100;
-                  const turf = turfs.find((t) => t.id === booking.turfId);
+                  const turf = turfs.find((t) => t._id === booking.turfId);
 
                   const amount = booking.totalAmount ?? 0;
 const paid = booking.amountPaid ?? 0;
@@ -751,7 +751,7 @@ const balance = amount - paid;
                 {/* few bookings summary */}
                 <div className="space-y-0.5">
                   {dayBookings.slice(0, 3).map((booking) => {
-                    const turf = turfs.find((t) => t.id === booking.turfId);
+                    const turf = turfs.find((t) => t._id === booking.turfId);
                     return (
                       <div
                         key={booking.id}

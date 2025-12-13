@@ -9,7 +9,8 @@ import { Plus, MapPin } from 'lucide-react';
 import { Turf } from '@/types';
 
 const Turfs = () => {
-  const { turfs } = useApp();
+  const { 
+    turfs } = useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const [formOpen, setFormOpen] = useState(false);
   const [editingTurf, setEditingTurf] = useState<Turf | null>(null);
@@ -67,7 +68,7 @@ const Turfs = () => {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {turfs?.map((turf, index) => (
               <div
-                key={turf.id}
+                key={turf._id}
                 className={`animate-fade-in opacity-0 stagger-${Math.min(index + 1, 5)}`}
               >
                 <TurfCard turf={turf} onEdit={handleEdit} />

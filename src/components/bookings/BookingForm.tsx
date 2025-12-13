@@ -102,7 +102,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
   const watchedRecurringFrequency = form.watch('recurringFrequency');
 
   const selectedTurf = useMemo(
-    () => turfs.find((t) => t.id === watchedTurfId),
+    () => turfs?.find((t) => t._id === watchedTurfId),
     [turfs, watchedTurfId]
   );
 
@@ -187,7 +187,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       });
     } else {
       form.reset({
-        turfId: turfs[0]?.id || '',
+        turfId: turfs[0]?._id || '',
         customerName: '',
         phoneNumber: '',
         date: selectedDate || new Date(),
@@ -279,7 +279,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
                     </FormControl>
                     <SelectContent>
                       {turfs.filter((t) => t.isActive).map((turf) => (
-                        <SelectItem key={turf.id} value={turf.id}>
+                        <SelectItem key={turf._id} value={turf._id}>
                           <div className="flex items-center gap-2">
                             <div
                               className="h-3 w-3 rounded-full"

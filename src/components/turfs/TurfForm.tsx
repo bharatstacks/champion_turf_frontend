@@ -85,7 +85,7 @@ export function TurfForm({ open, onOpenChange, turf }: TurfFormProps) {
 
   const onSubmit = (data: TurfFormData) => {
     if (turf) {
-      updateTurf(turf.id, {
+      updateTurf(turf._id, {
         name: data.name,
         description: data.description,
         pricePerHour: data.pricePerHour,

@@ -21,13 +21,13 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [turfs, setTurfs] = useState<Turf[]>();
-  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
+  const [bookings, setBookings] = useState<Booking[]>();
 
 
   useEffect(() => {
 
     getTurfList()
-    
+    getBookingList()
   }, []);
 
   const getTurfList = async () => {
@@ -36,6 +36,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.log('Booking created successfully:', response);
       
       setTurfs(response?.turfs)
+      // Handle success (e.g., show success message, redirect, etc.)
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      // Handle error (e.g., show error message)
+    }
+  }
+
+  const getBookingList = async () => {
+      try {
+      const response = await get<any>('booking/'); // Use post utility function
+      console.log('Booking created successfully:', response);
+      
+      setBookings(response?.bookings)
       // Handle success (e.g., show success message, redirect, etc.)
     } catch (error) {
       console.error('Error creating booking:', error);
@@ -53,7 +66,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addTurf = async (turf: Omit<Turf, 'id' | 'createdAt'>) => {
     const newTurf: Turf = {
       ...turf,
-      id: generateId(), // FIXED
+      _id: generateId(), // FIXED
       createdAt: new Date(),
     };
     try {
@@ -70,12 +83,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateTurf = (id: string, updates: Partial<Turf>) => {
     setTurfs((prev) =>
-      prev.map((turf) => (turf.id === id ? { ...turf, ...updates } : turf))
+      prev.map((turf) => (turf._id === id ? { ...turf, ...updates } : turf))
     );
   };
 
   const deleteTurf = (id: string) => {
-    setTurfs((prev) => prev.filter((turf) => turf.id !== id));
+    setTurfs((prev) => prev.filter((turf) => turf._id !== id));
     setBookings((prev) => prev.filter((booking) => booking.turfId !== id));
   };
 

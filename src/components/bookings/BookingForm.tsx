@@ -52,6 +52,7 @@ const bookingSchema = z.object({
   date: z.date({ required_error: 'Date is required' }),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
+    pricePerHour: z.number().min(0, 'Price must be >= 0'), 
   amountPaid: z.number().min(0, 'Amount must be 0 or more'),
   isRecurring: z.boolean(),
   recurringFrequency: z.string().optional(),
@@ -86,6 +87,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       date: selectedDate || new Date(),
       startTime: '10:00',
       endTime: '11:00',
+      pricePerHour: 0, 
       amountPaid: 0,
       isRecurring: false,
       status: 'confirmed',
@@ -100,17 +102,20 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
   const isRecurring = form.watch('isRecurring');
   const watchedRecurringEndDate = form.watch('recurringEndDate');
   const watchedRecurringFrequency = form.watch('recurringFrequency');
+  
 
   const selectedTurf = useMemo(
     () => turfs.find((t) => t.id === watchedTurfId),
     [turfs, watchedTurfId]
   );
+  const watchedPricePerHour = form.watch('pricePerHour');
+
 
   const { duration, totalAmount, balance, timeError, pricePerHour } = useBookingCalculations(
     selectedTurf,
     watchedStartTime,
     watchedEndTime,
-    watchedAmountPaid
+    watchedAmountPaid,watchedPricePerHour 
   );
 
   // Calculate recurring booking totals
@@ -170,6 +175,8 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
 
   useEffect(() => {
     if (booking) {
+          const turf = turfs.find((t) => t.id === booking.turfId);
+
       form.reset({
         turfId: booking.turfId,
         customerName: booking.customerName,
@@ -177,6 +184,12 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
         date: new Date(booking.date),
         startTime: booking.startTime,
         endTime: booking.endTime,
+            pricePerHour:
+        // if booking has custom price, use it
+        (booking as any).pricePerHour ??
+        // else fallback to turf default
+        turf?.pricePerHour ??
+        0,
         amountPaid: booking.amountPaid,
         isRecurring: booking.isRecurring,
         recurringFrequency: booking.recurringPattern?.frequency,
@@ -186,6 +199,8 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
         status: booking.status,
       });
     } else {
+          const defaultTurf = turfs[0];
+
       form.reset({
         turfId: turfs[0]?.id || '',
         customerName: '',
@@ -193,12 +208,28 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
         date: selectedDate || new Date(),
         startTime: '10:00',
         endTime: '11:00',
+        pricePerHour: defaultTurf?.pricePerHour ?? 0,
         amountPaid: 0,
         isRecurring: false,
         status: 'confirmed',
       });
     }
   }, [booking, selectedDate, form, turfs]);
+// 👇 watch selected turf
+//const watchedTurfId = form.watch('turfId');
+
+useEffect(() => {
+  if (!watchedTurfId) return;
+
+  const turf = turfs.find((t) => t.id === watchedTurfId);
+  if (!turf) return;
+
+  // Update rate when turf changes
+  form.setValue('pricePerHour', turf.pricePerHour ?? 0, {
+    shouldDirty: true,
+    shouldValidate: true,
+  });
+}, [watchedTurfId, turfs, form]);
 
   const onSubmit = (data: BookingFormData) => {
     if (timeError) {
@@ -285,12 +316,33 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
                               className="h-3 w-3 rounded-full"
                               style={{ backgroundColor: turf.color }}
                             />
-                            {turf.name} - ₹{turf.pricePerHour}/hr
+                            {turf.name} 
                           </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="pricePerHour"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rate per Hour (₹)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={50}
+                      placeholder="Enter rate per hour"
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -304,7 +356,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
                   <FormItem>
                     <FormLabel>Customer Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John Doe" {...field} />
+                      <Input placeholder="Enter Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -318,7 +370,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="+91 98765 43210" {...field} />
+                      <Input placeholder="Enter Number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

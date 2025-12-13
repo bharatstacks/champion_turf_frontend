@@ -16,6 +16,7 @@ export interface Booking {
   date: Date;
   startTime: string;
   endTime: string;
+   pricePerHour?: number; 
   totalAmount: number;
   amountPaid: number;
   amountBalance: number;

@@ -70,20 +70,29 @@ export function useBookingCalculations(
   turf: Turf | undefined,
   startTime: string,
   endTime: string,
-  amountPaid: number
+  amountPaid: number,
+   manualPricePerHour: number
 ) {
   return useMemo(() => {
     const duration = calculateDuration(startTime, endTime);
-    const totalAmount = turf ? calculateTotalAmount(turf.pricePerHour, duration) : 0;
+    const pricePerHour =
+    manualPricePerHour !== undefined
+      ? manualPricePerHour
+      : turf?.pricePerHour ?? 0;
+    const totalAmount = turf ? calculateTotalAmount(pricePerHour, duration) : 0;
     const balance = calculateBalance(totalAmount, amountPaid);
     const timeError = validateTimeSlot(startTime, endTime);
+
+    // const pricePerHour = manualPricePerHour || (turf ? turf.pricePerHour : 0);
+  
 
     return {
       duration,
       totalAmount,
       balance,
       timeError,
-      pricePerHour: turf?.pricePerHour || 0,
+      // pricePerHour: turf?.pricePerHour || 0,
+      pricePerHour
     };
-  }, [turf, startTime, endTime, amountPaid]);
+  }, [turf, startTime, endTime, amountPaid, manualPricePerHour ]);
 }

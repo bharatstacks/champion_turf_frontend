@@ -613,6 +613,11 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                     ((endMin - startMin) / TOTAL_MINUTES) * 100;
                   const turf = turfs.find((t) => t.id === booking.turfId);
 
+                  const amount = booking.totalAmount ?? 0;
+const paid = booking.amountPaid ?? 0;
+const balance = amount - paid;
+
+
                   return (
                     <button
                       key={booking.id}
@@ -638,6 +643,16 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
                       <div className="text-[9px] text-muted-foreground">
                         {booking.startTime} – {booking.endTime}
                       </div>
+                      <div className="text-[9px] flex justify-between">
+    <span>₹{paid}/{amount}</span>
+    <span
+      className={
+        balance > 0 ? 'text-red-500 font-medium' : 'text-green-600 font-medium'
+      }
+    >
+      {balance > 0 ? `Bal ₹${balance}` : 'Paid'}
+    </span>
+  </div>
                     </button>
                   );
                 })}

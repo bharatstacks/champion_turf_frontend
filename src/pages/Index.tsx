@@ -92,7 +92,7 @@ const Index = () => {
             <div className="text-right">
               <p className="text-sm font-medium text-muted-foreground">Active Turfs</p>
               <p className="text-4xl font-bold text-primary">
-                {turfs.filter((t) => t.isActive).length}
+                {turfs?.filter((t) => t.isActive).length}
               </p>
             </div>
           </div>

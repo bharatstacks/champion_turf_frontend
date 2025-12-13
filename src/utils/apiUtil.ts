@@ -6,7 +6,6 @@ const BASE_URL =  'http://localhost:3000/api/'; // Default to localhost if the v
 // Define a custom Axios instance
 const apiClient = axios.create({
   baseURL: BASE_URL, // replace with your API's base URL
-  timeout: 10000, // Optional: Set a timeout for requests
 });
 
 // Request and response interceptors can be configured here (optional)

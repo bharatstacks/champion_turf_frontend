@@ -11,7 +11,7 @@ export function TodaysBookings() {
     .filter((booking) => isToday(new Date(booking.date)))
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const getTurf = (turfId: string) => turfs.find((t) => t.id === turfId);
+  const getTurf = (turfId: string) => turfs?.find((t) => t.id === turfId);
 
   return (
     <div className="rounded-xl border border-border bg-card">

@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Turf, Booking } from '@/types';
 import { mockTurfs, mockBookings } from '@/data/mockData';
 import { addWeeks, addMonths, addDays, isBefore, startOfDay } from 'date-fns';
 import { post } from '../utils/apiUtil'; // Import the post method from apiUtil
+import { get } from '../utils/apiUtil';
 
 interface AppContextType {
   turfs: Turf[];
@@ -19,8 +20,28 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [turfs, setTurfs] = useState<Turf[]>(mockTurfs);
+  const [turfs, setTurfs] = useState<Turf[]>();
   const [bookings, setBookings] = useState<Booking[]>(mockBookings);
+
+
+  useEffect(() => {
+
+    getTurfList()
+    
+  }, []);
+
+  const getTurfList = async () => {
+      try {
+      const response = await get<any>('turf/'); // Use post utility function
+      console.log('Booking created successfully:', response);
+      
+      setTurfs(response?.turfs)
+      // Handle success (e.g., show success message, redirect, etc.)
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      // Handle error (e.g., show error message)
+    }
+  }
 
   // ✅ UNIVERSAL ID GENERATOR
   const generateId = () =>
@@ -29,12 +50,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       : Math.random().toString(36).substring(2) + Date.now().toString(36);
 
   // ---------- TURF CRUD ----------
-  const addTurf = (turf: Omit<Turf, 'id' | 'createdAt'>) => {
+  const addTurf = async (turf: Omit<Turf, 'id' | 'createdAt'>) => {
     const newTurf: Turf = {
       ...turf,
       id: generateId(), // FIXED
       createdAt: new Date(),
     };
+    try {
+      const response = await post<any>('turf/', newTurf); // Use post utility function
+      console.log('Booking created successfully:', response);
+      // Handle success (e.g., show success message, redirect, etc.)
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      // Handle error (e.g., show error message)
+    }
+
     setTurfs((prev) => [...prev, newTurf]);
   };
 

@@ -101,6 +101,7 @@ export function TurfForm({ open, onOpenChange, turf }: TurfFormProps) {
         color: data.color,
         isActive: data.isActive,
       });
+      
       toast.success('Turf created successfully');
     }
     onOpenChange(false);

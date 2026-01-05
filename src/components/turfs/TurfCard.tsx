@@ -23,8 +23,8 @@ interface TurfCardProps {
 export function TurfCard({ turf, onEdit }: TurfCardProps) {
   const { deleteTurf, bookings } = useApp();
   
-  const turfBookings = bookings.filter((b) => b.turfId === turf.id);
-  const activeBookings = turfBookings.filter((b) => b.status !== 'cancelled').length;
+  const turfBookings = bookings?.filter((b) => b.turfId === turf.id);
+  const activeBookings = turfBookings?.filter((b) => b.status !== 'cancelled').length;
 
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:border-primary/30 hover:glow-sm">
@@ -77,7 +77,7 @@ export function TurfCard({ turf, onEdit }: TurfCardProps) {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => deleteTurf(turf.id)}
+                    onClick={() => deleteTurf(turf._id)}
                     className="bg-destructive hover:bg-destructive/90"
                   >
                     Delete

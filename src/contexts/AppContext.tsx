@@ -2,8 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { Turf, Booking } from '@/types';
 import { mockTurfs, mockBookings } from '@/data/mockData';
 import { addWeeks, addMonths, addDays, isBefore, startOfDay } from 'date-fns';
-import { post } from '../utils/apiUtil'; // Import the post method from apiUtil
-import { get } from '../utils/apiUtil';
+import {get, post, put ,del } from '../utils/apiUtil'; // Import the post method from apiUtil
 
 interface AppContextType {
   turfs: Turf[];
@@ -22,18 +21,18 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [turfs, setTurfs] = useState<Turf[]>();
   const [bookings, setBookings] = useState<Booking[]>();
+  const [tempBookings, setTempBookings] = useState<Booking[]>();
 
 
   useEffect(() => {
-
     getTurfList()
     getBookingList()
-  }, []);
+  }, [turfs?.length, bookings?.length]);
 
   const getTurfList = async () => {
       try {
       const response = await get<any>('turf/'); // Use post utility function
-      console.log('Booking created successfully:', response);
+      console.log('Turf list fetched successfully:', response);
       
       setTurfs(response?.turfs)
       // Handle success (e.g., show success message, redirect, etc.)
@@ -46,9 +45,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const getBookingList = async () => {
       try {
       const response = await get<any>('booking/'); // Use post utility function
-      console.log('Booking created successfully:', response);
+      console.log('Booking list fetched successfully:', response);
       
       setBookings(response?.bookings)
+      // Handle success (e.g., show success message, redirect, etc.)
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      // Handle error (e.g., show error message)
+    }
+  }
+
+  const getBookingListForUpdate = async () => {
+      try {
+      const response = await get<any>('booking/'); // Use post utility function
+      console.log('Booking list fetched for updates successfully:', response);
+      
+      setTempBookings(response?.bookings)
       // Handle success (e.g., show success message, redirect, etc.)
     } catch (error) {
       console.error('Error creating booking:', error);
@@ -66,7 +78,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addTurf = async (turf: Omit<Turf, 'id' | 'createdAt'>) => {
     const newTurf: Turf = {
       ...turf,
-      _id: generateId(), // FIXED
+      id: generateId(), // FIXED
       createdAt: new Date(),
     };
     try {
@@ -81,15 +93,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTurfs((prev) => [...prev, newTurf]);
   };
 
-  const updateTurf = (id: string, updates: Partial<Turf>) => {
+  const updateTurf = async (id: string, updates: Partial<Turf>) => {
+    const response = await put<any>(`turf/${id}`, { ...updates, _id: id }); // Use post utility function
+      console.log('Turf updated successfully:', response);
     setTurfs((prev) =>
       prev.map((turf) => (turf._id === id ? { ...turf, ...updates } : turf))
     );
   };
 
-  const deleteTurf = (id: string) => {
+  const deleteTurf = async (id: string) => {
+    const response = await del<any>(`turf/${id}`);
+      console.log('Turf deleted successfully:', response);
     setTurfs((prev) => prev.filter((turf) => turf._id !== id));
-    setBookings((prev) => prev.filter((booking) => booking.turfId !== id));
+    // setBookings((prev) => prev.filter((booking) => booking.turfId !== id));
   };
 
   // ---------- BOOKING CRUD ----------
@@ -150,16 +166,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateBooking = (id: string, updates: Partial<Booking>) => {
-    setBookings((prev) =>
-      prev.map((booking) =>
-        booking.id === id ? { ...booking, ...updates } : booking
-      )
-    );
+  const updateBooking = async (id: string, updates: Partial<Booking>) => {
+    try {
+      const response = await put<any>(`booking/${id}`, { ...updates, _id: id });
+      console.log('Booking updated successfully:', response);
+      if(response.message == "Booking updated successfully"){
+        getBookingList();
+      }
+    } catch (error) {
+      console.error('Error updating booking:', error);
+      // Optionally, show an error toast or handle failure
+    }
   };
 
-  const deleteBooking = (id: string) => {
-    setBookings((prev) => prev.filter((booking) => booking.id !== id));
+  const deleteBooking = async (id: string) => {
+    const response = await del<any>(`booking/${id}`);
+      console.log('Booking deleted successfully:', response);
+      if(response.message == "Booking deleted successfully"){
+          getBookingList();
+        }
   };
 
   const deleteRecurringGroup = (groupId: string) => {

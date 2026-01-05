@@ -60,7 +60,7 @@ const Bookings = () => {
       setFormOpen(true);
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams,bookings?.length, bookings,turfs?.length, turfs]);
 
   const getTurf = (turfId: string) => turfs?.find((t) => t._id === turfId);
 
@@ -69,7 +69,7 @@ const Bookings = () => {
         booking?.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking?.phoneNumber?.includes(searchTerm);
       const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
-      const matchesTurf = turfFilter === 'all' || booking.turfId === turfFilter;
+      const matchesTurf = turfFilter === 'all' || booking.turfId?.id === turfFilter;
       const matchesRecurring = recurringFilter === null || booking.isRecurring === recurringFilter;
       return matchesSearch && matchesStatus && matchesTurf && matchesRecurring;
     })
@@ -96,7 +96,7 @@ const Bookings = () => {
     if (deleteAll && bookingToDelete.recurringGroupId) {
       deleteRecurringGroup(bookingToDelete.recurringGroupId);
     } else {
-      deleteBooking(bookingToDelete.id);
+      deleteBooking(bookingToDelete._id);
     }
 
     setDeleteDialogOpen(false);
@@ -196,7 +196,10 @@ const Bookings = () => {
                 </TableRow>
               ) : (
                 filteredBookings?.map((booking) => {
-                  const turf = getTurf(booking.turfId);
+                  let turf = turfs?.find((t) => t._id == booking.turfId?._id);
+                  if(turf === undefined){
+                    turf = turfs?.find((t) => t._id == booking.turfId);
+                  }
                   return (
                     <TableRow key={booking.id}>
                       <TableCell>
@@ -213,7 +216,7 @@ const Bookings = () => {
                             className="h-3 w-3 rounded-full"
                             style={{ backgroundColor: turf?.color }}
                           />
-                          <span>{turf?.name}</span>
+                          <span>{turf?.name  || 'Turf not found'}</span>
                           {booking.isRecurring && (
                             <Badge variant="outline" className="text-xs">
                               Recurring

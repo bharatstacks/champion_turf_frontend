@@ -1,5 +1,6 @@
 export interface Turf {
   _id?: string;
+  id: string;
   name: string;
   description: string;
   pricePerHour: number;
@@ -9,8 +10,9 @@ export interface Turf {
 }
 
 export interface Booking {
+  _id: string;
   id: string;
-  turfId: string;
+  turfId: Turf;
   customerName: string;
   phoneNumber: string;
   date: Date;

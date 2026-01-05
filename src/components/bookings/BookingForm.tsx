@@ -175,10 +175,10 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
 
   useEffect(() => {
     if (booking) {
-          const turf = turfs.find((t) => t.id === booking.turfId);
+          const turf = turfs.find((t) => t._id === booking.turfId);
 
       form.reset({
-        turfId: booking.turfId,
+        turfId: booking.turfId?._id || '',
         customerName: booking.customerName,
         phoneNumber: booking.phoneNumber,
         date: new Date(booking.date),
@@ -199,16 +199,15 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
         status: booking.status,
       });
     } else {
-          const defaultTurf = turfs[0];
 
       form.reset({
-        turfId: turfs[0]?._id || '',
+        turfId: '',
         customerName: '',
         phoneNumber: '',
         date: selectedDate || new Date(),
         startTime: '10:00',
         endTime: '11:00',
-        pricePerHour: defaultTurf?.pricePerHour ?? 0,
+        pricePerHour: 0,
         amountPaid: 0,
         isRecurring: false,
         status: 'confirmed',
@@ -221,7 +220,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
 useEffect(() => {
   if (!watchedTurfId) return;
 
-  const turf = turfs.find((t) => t.id === watchedTurfId);
+  const turf = turfs.find((t) => t._id === watchedTurfId);
   if (!turf) return;
 
   // Update rate when turf changes
@@ -251,23 +250,25 @@ useEffect(() => {
       date: data.date,
       startTime: data.startTime,
       endTime: data.endTime,
+      pricePerHour: data.pricePerHour,
       totalAmount: isRecurring ? totalAmount : finalTotalAmount, // Per booking total for recurring
       amountPaid: isRecurring ? Math.round(data.amountPaid / (recurringInfo?.occurrences || 1)) : data.amountPaid,
       amountBalance: isRecurring ? Math.round(finalBalance / (recurringInfo?.occurrences || 1)) : finalBalance,
       isRecurring: data.isRecurring,
       status: data.status,
       recurringPattern: data.isRecurring && data.recurringFrequency && data.recurringEndDate
-        ? {
-            frequency: data.recurringFrequency as 'daily' | 'weekly' | 'monthly',
-            dayOfWeek: data.date.getDay(),
-            endDate: data.recurringEndDate,
-          }
-        : undefined,
+      ? {
+        frequency: data.recurringFrequency as 'daily' | 'weekly' | 'monthly',
+        dayOfWeek: data.date.getDay(),
+        endDate: data.recurringEndDate,
+      }
+      : undefined,
     };
-
+    
     if (booking) {
-      updateBooking(booking.id, {
+      updateBooking(booking._id, {
         ...bookingData,
+        pricePerHour: data.pricePerHour,
         totalAmount: totalAmount,
         amountPaid: data.amountPaid,
         amountBalance: balance,

@@ -46,6 +46,9 @@ export function checkBookingOverlap(
   const newStartMinutes = newStartHour * 60 + newStartMin;
   const newEndMinutes = newEndHour * 60 + newEndMin;
 
+  if(!existingBookings)
+    existingBookings = []
+  
   for (const booking of existingBookings) {
     if (booking.id === excludeBookingId) continue;
     if (booking.turfId !== turfId) continue;

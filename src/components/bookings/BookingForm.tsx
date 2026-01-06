@@ -52,7 +52,7 @@ const bookingSchema = z.object({
   date: z.date({ required_error: 'Date is required' }),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-    pricePerHour: z.number().min(0, 'Price must be >= 0'), 
+  pricePerHour: z.number().min(0, 'Price must be >= 0'),
   amountPaid: z.number().min(0, 'Amount must be 0 or more'),
   isRecurring: z.boolean(),
   recurringFrequency: z.string().optional(),
@@ -87,7 +87,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       date: selectedDate || new Date(),
       startTime: '10:00',
       endTime: '11:00',
-      pricePerHour: 0, 
+      pricePerHour: 0,
       amountPaid: 0,
       isRecurring: false,
       status: 'confirmed',
@@ -102,7 +102,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
   const isRecurring = form.watch('isRecurring');
   const watchedRecurringEndDate = form.watch('recurringEndDate');
   const watchedRecurringFrequency = form.watch('recurringFrequency');
-  
+
 
   const selectedTurf = useMemo(
     () => turfs?.find((t) => t._id === watchedTurfId),
@@ -115,7 +115,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
     selectedTurf,
     watchedStartTime,
     watchedEndTime,
-    watchedAmountPaid,watchedPricePerHour 
+    watchedAmountPaid, watchedPricePerHour
   );
 
   // Calculate recurring booking totals
@@ -184,12 +184,12 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
         date: new Date(booking.date),
         startTime: booking.startTime,
         endTime: booking.endTime,
-            pricePerHour:
-        // if booking has custom price, use it
-        (booking as any).pricePerHour ??
-        // else fallback to turf default
-        turf?.pricePerHour ??
-        0,
+        pricePerHour:
+          // if booking has custom price, use it
+          (booking as any).pricePerHour ??
+          // else fallback to turf default
+          turf?.pricePerHour ??
+          0,
         amountPaid: booking.amountPaid,
         isRecurring: booking.isRecurring,
         recurringFrequency: booking.recurringPattern?.frequency,
@@ -199,6 +199,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
         status: booking.status,
       });
     } else {
+      const defaultTurf = turfs ? turfs[0] : null;
 
       form.reset({
         turfId: '',
@@ -214,11 +215,11 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       });
     }
   }, [booking, selectedDate, form, turfs]);
-// 👇 watch selected turf
-//const watchedTurfId = form.watch('turfId');
+  // 👇 watch selected turf
+  //const watchedTurfId = form.watch('turfId');
 
-useEffect(() => {
-  if (!watchedTurfId) return;
+  useEffect(() => {
+    if (!watchedTurfId) return;
 
   const turf = turfs.find((t) => t._id === watchedTurfId);
   if (!turf) return;
@@ -239,8 +240,8 @@ useEffect(() => {
       return;
     }
 
-    const finalTotalAmount = isRecurring && recurringInfo 
-      ? recurringInfo.totalRecurringAmount 
+    const finalTotalAmount = isRecurring && recurringInfo
+      ? recurringInfo.totalRecurringAmount
       : totalAmount;
     const finalBalance = isRecurring && recurringInfo
       ? recurringInfo.totalRecurringBalance
@@ -320,7 +321,7 @@ useEffect(() => {
                               className="h-3 w-3 rounded-full"
                               style={{ backgroundColor: turf.color }}
                             />
-                            {turf.name} 
+                            {turf.name}
                           </div>
                         </SelectItem>
                       ))}
@@ -486,13 +487,13 @@ useEffect(() => {
                     <span className="text-muted-foreground">Duration:</span>
                   </div>
                   <span className="font-medium">{duration} hour(s)</span>
-                  
+
                   <span className="text-muted-foreground">Rate:</span>
                   <span className="font-medium">₹{pricePerHour}/hr</span>
-                  
+
                   <span className="text-muted-foreground">Total Amount:</span>
                   <span className="font-semibold text-primary">₹{totalAmount}</span>
-                  
+
                   <span className="text-muted-foreground">Balance:</span>
                   <span className={cn(
                     "font-semibold",
@@ -648,10 +649,10 @@ useEffect(() => {
                         <div className="grid grid-cols-2 gap-1 text-sm">
                           <span className="text-muted-foreground">Total Bookings:</span>
                           <span className="font-medium">{recurringInfo.occurrences}</span>
-                          
+
                           <span className="text-muted-foreground">Total Cost:</span>
                           <span className="font-semibold">₹{recurringInfo.totalRecurringAmount}</span>
-                          
+
                           <span className="text-muted-foreground">Total Balance:</span>
                           <span className={cn(
                             "font-semibold",
@@ -676,8 +677,8 @@ useEffect(() => {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="flex-1"
                 disabled={!!timeError}
               >

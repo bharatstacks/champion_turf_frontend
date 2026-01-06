@@ -1,64 +1,3 @@
-// import { useState } from 'react';
-// import { MainLayout } from '@/components/layout/MainLayout';
-// import { BookingCalendar } from '@/components/bookings/BookingCalendar';
-// import { BookingForm } from '@/components/bookings/BookingForm';
-// import { Booking } from '@/types';
-
-// const Calendar = () => {
-//   const [formOpen, setFormOpen] = useState(false);
-//   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-//   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
-
-//   const handleDateClick = (date: Date) => {
-//     setSelectedDate(date);
-//     setEditingBooking(null);
-//     setFormOpen(true);
-//   };
-
-//   const handleBookingClick = (booking: Booking) => {
-//     setEditingBooking(booking);
-//     setSelectedDate(undefined);
-//     setFormOpen(true);
-//   };
-
-//   const handleClose = () => {
-//     setFormOpen(false);
-//     setSelectedDate(undefined);
-//     setEditingBooking(null);
-//   };
-
-//   return (
-//     <MainLayout>
-//       <div className="space-y-6">
-//         {/* Header */}
-//         <div className="animate-fade-in opacity-0">
-//           <h1 className="text-3xl font-bold text-foreground">Calendar</h1>
-//           <p className="text-muted-foreground">
-//             View and manage all bookings across your turfs.
-//           </p>
-//         </div>
-
-//         {/* Calendar */}
-//         <div className="animate-fade-in opacity-0 stagger-1">
-//           <BookingCalendar
-//             onDateClick={handleDateClick}
-//             onBookingClick={handleBookingClick}
-//           />
-//         </div>
-
-//         <BookingForm
-//           open={formOpen}
-//           onOpenChange={handleClose}
-//           booking={editingBooking}
-//           selectedDate={selectedDate}
-//         />
-//       </div>
-//     </MainLayout>
-//   );
-// };
-
-// export default Calendar;
-
 
 // src/pages/Calendar.tsx
 import { useState } from 'react';
@@ -106,7 +45,7 @@ const Calendar = () => {
 
   // collect unique turf types from your turfs list
   const turfTypes = Array.from(
-    new Set(turfs.map((t) => t.name).filter(Boolean))   // if your field name is different, change t.type
+    new Set(turfs?.map((t) => t.name).filter(Boolean))   // if your field name is different, change t.type
   ) as string[];
 
   return (
@@ -141,8 +80,8 @@ const Calendar = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Turfs</SelectItem>
-                {turfs.map((turf) => (
-                  <SelectItem key={turf.id} value={turf.id}>
+                {turfs?.map((turf) => (
+                  <SelectItem key={turf._id} value={turf._id}>
                     {turf.name}
                   </SelectItem>
                 ))}

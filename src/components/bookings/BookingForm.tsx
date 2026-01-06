@@ -224,10 +224,13 @@ useEffect(() => {
   if (!turf) return;
 
   // Update rate when turf changes
-  form.setValue('pricePerHour', turf.pricePerHour ?? 0, {
-    shouldDirty: true,
-    shouldValidate: true,
-  });
+  const pricePerHour = form.getValues('pricePerHour');
+  if (pricePerHour <= 0) {
+    form.setValue('pricePerHour', turf.pricePerHour ?? 0, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }
 }, [watchedTurfId, turfs, form]);
 
   const onSubmit = (data: BookingFormData) => {

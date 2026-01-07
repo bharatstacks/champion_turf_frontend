@@ -65,15 +65,26 @@ const Bookings = () => {
   const getTurf = (turfId: string) => turfs?.find((t) => t._id === turfId);
 
   const filteredBookings = bookings?.filter((booking) => {
-      const matchesSearch =
-        booking?.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking?.phoneNumber?.includes(searchTerm);
-      const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
-      const matchesTurf = turfFilter === 'all' || booking.turfId?.id === turfFilter;
-      const matchesRecurring = recurringFilter === null || booking.isRecurring === recurringFilter;
-      return matchesSearch && matchesStatus && matchesTurf && matchesRecurring;
-    })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const matchesSearch =
+      booking?.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking?.phoneNumber?.includes(searchTerm);
+    const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
+    const matchesTurf = turfFilter === 'all' || booking.turfId === turfFilter;
+    const matchesRecurring = recurringFilter === null || booking.isRecurring === recurringFilter;
+    return matchesSearch && matchesStatus && matchesTurf && matchesRecurring;
+  })
+    .sort((a, b) => {
+      const aStart = new Date(a.startDate);
+      const [ah, am] = a.startTime.split(':').map(Number);
+      aStart.setHours(ah, am, 0, 0);
+
+      const bStart = new Date(b.startDate);
+      const [bh, bm] = b.startTime.split(':').map(Number);
+      bStart.setHours(bh, bm, 0, 0);
+
+      return bStart.getTime() - aStart.getTime();
+    });
+
 
   const handleEdit = (booking: Booking) => {
     setEditingBooking(booking);
@@ -96,7 +107,7 @@ const Bookings = () => {
     if (deleteAll && bookingToDelete.recurringGroupId) {
       deleteRecurringGroup(bookingToDelete.recurringGroupId);
     } else {
-      deleteBooking(bookingToDelete._id);
+      deleteBooking(bookingToDelete.id);
     }
 
     setDeleteDialogOpen(false);
@@ -156,8 +167,8 @@ const Bookings = () => {
               ))}
             </SelectContent>
           </Select>
-          <Select 
-            value={recurringFilter === null ? 'all' : recurringFilter ? 'recurring' : 'single'} 
+          <Select
+            value={recurringFilter === null ? 'all' : recurringFilter ? 'recurring' : 'single'}
             onValueChange={(v) => setRecurringFilter(v === 'all' ? null : v === 'recurring')}
           >
             <SelectTrigger className="w-[150px]">
@@ -196,9 +207,9 @@ const Bookings = () => {
                 </TableRow>
               ) : (
                 filteredBookings?.map((booking) => {
-                  let turf = turfs?.find((t) => t._id == booking.turfId?._id);
+                  let turf = turfs?.find((t) => t.id == booking.turfId);
                   if(turf === undefined){
-                    turf = turfs?.find((t) => t._id == booking.turfId);
+                    turf = turfs?.find((t) => t.id == booking.turfId);
                   }
                   return (
                     <TableRow key={booking.id}>
@@ -226,7 +237,14 @@ const Bookings = () => {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p>{format(new Date(booking.date), 'MMM d, yyyy')}</p>
+                          <p>
+                            {format(new Date(booking.startDate), 'MMM d, yyyy')}
+                            {booking.startDate.toDateString() !== booking.endDate.toDateString() && (
+                              <>
+                                {' '}→ {format(new Date(booking.endDate), 'MMM d, yyyy')}
+                              </>
+                            )}
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {booking.startTime} - {booking.endTime}
                           </p>
@@ -251,10 +269,10 @@ const Bookings = () => {
                             booking.status === 'confirmed'
                               ? 'default'
                               : booking.status === 'pending'
-                              ? 'secondary'
-                              : booking.status === 'completed'
-                              ? 'outline'
-                              : 'destructive'
+                                ? 'secondary'
+                                : booking.status === 'completed'
+                                  ? 'outline'
+                                  : 'destructive'
                           }
                           className={cn(
                             booking.status === 'confirmed' && 'bg-turf-green hover:bg-turf-green/90',

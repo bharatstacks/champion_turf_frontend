@@ -6,6 +6,7 @@ import {
   addDays,
   isSameDay,
   startOfDay,
+  endOfDay,
   startOfMonth,
   endOfMonth,
 } from 'date-fns';
@@ -110,13 +111,25 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   }, [bookings, turfs, turfFilter, turfTypeFilter]);
 
   // ====== DAY VIEW ======
-  const dayView = () => {
-    const dayBookings = filteredBookings.filter((b) =>
-      isSameDay(new Date(b.date), currentDay)
-    );
-
-
+  // const dayView = () => {
+  //   const dayBookings = filteredBookings.filter((b) =>
+  //     isSameDay(new Date(b.date), currentDay)
     
+  //   );
+
+    const dayView = () => {
+  const dayBookings = filteredBookings.filter((b) => {
+    const start = new Date(b.startDate);
+    const end = new Date(b.endDate);
+
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    return currentDay >= start && currentDay <= end;
+  });
+
+
+
 
     const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
       const rect = e.currentTarget.getBoundingClientRect();
@@ -238,9 +251,24 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
     weekDays?.forEach((_, i) => (bookingsByDay[i] = []));
 
     filteredBookings?.forEach((b) => {
-      const d = new Date(b.date);
+      //const d = new Date(b.date);
+
+         const bookingStart = new Date(b.startDate);
+    const [sh, sm] = b.startTime.split(':').map(Number);
+    bookingStart.setHours(sh, sm, 0, 0);
+
+    // Booking end datetime
+    const bookingEnd = new Date(b.endDate);
+    const [eh, em] = b.endTime.split(':').map(Number);
+    bookingEnd.setHours(eh, em, 0, 0);
+
       weekDays.forEach((day, idx) => {
-        if (isSameDay(d, day)) bookingsByDay[idx].push(b);
+          const dayStart = startOfDay(day);
+      const dayEnd = endOfDay(day);
+       // if (isSameDay(d, day)) bookingsByDay[idx].push(b);
+         if (bookingStart < dayEnd && bookingEnd > dayStart) {
+        bookingsByDay[idx].push(b);
+      }
       });
     });
 
@@ -461,9 +489,15 @@ const balance = amount - paid;
           {/* days */}
           {days.map((day, idx) => {
             const isCurrentMonth = day.getMonth() === currentDay.getMonth();
-            const dayBookings = filteredBookings.filter((b) =>
-              isSameDay(new Date(b.date), day)
-            );
+            const dayBookings = filteredBookings.filter((b) =>{
+               const start = new Date(b.startDate);
+              const end = new Date(b.endDate);
+
+              start.setHours(0, 0, 0, 0);
+              end.setHours(23, 59, 59, 999);
+
+              return day >= start && day <= end;
+          });
 
             return (
               <div
@@ -472,9 +506,8 @@ const balance = amount - paid;
                 onClick={() => onDateClick(startOfDay(day))}
               >
                 <div
-                  className={`mb-1 flex items-center justify-between ${
-                    isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/60'
-                  }`}
+                  className={`mb-1 flex items-center justify-between ${isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/60'
+                    }`}
                 >
                   <span>{format(day, 'd')}</span>
                   {dayBookings.length > 0 && (

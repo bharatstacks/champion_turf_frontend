@@ -49,7 +49,10 @@ const bookingSchema = z.object({
   turfId: z.string().min(1, 'Please select a turf'),
   customerName: z.string().min(1, 'Name is required').max(100),
   phoneNumber: z.string().min(10, 'Enter a valid phone number').max(15),
-  date: z.date({ required_error: 'Date is required' }),
+ // date: z.date({ required_error: 'Date is required' }),
+ 
+  startDate: z.date({ required_error: 'Start date is required' }),
+  endDate: z.date({ required_error: 'End date is required' }),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
   pricePerHour: z.number().min(0, 'Price must be >= 0'),
@@ -58,6 +61,19 @@ const bookingSchema = z.object({
   recurringFrequency: z.string().optional(),
   recurringEndDate: z.date().optional(),
   status: z.enum(['confirmed', 'pending', 'cancelled', 'completed']),
+}).refine((data) => {
+  const start = new Date(data.startDate);
+  const [sh, sm] = data.startTime.split(':').map(Number);
+  start.setHours(sh, sm, 0, 0);
+
+  const end = new Date(data.endDate);
+  const [eh, em] = data.endTime.split(':').map(Number);
+  end.setHours(eh, em, 0, 0);
+
+  return end > start;
+}, {
+  message: 'End date & time must be after start date & time',
+  path: ['endTime'],
 });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
@@ -84,7 +100,8 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       turfId: '',
       customerName: '',
       phoneNumber: '',
-      date: selectedDate || new Date(),
+       startDate: selectedDate || new Date(),
+  endDate: selectedDate || new Date(),
       startTime: '10:00',
       endTime: '11:00',
       pricePerHour: 0,
@@ -98,7 +115,9 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
   const watchedStartTime = form.watch('startTime');
   const watchedEndTime = form.watch('endTime');
   const watchedAmountPaid = form.watch('amountPaid');
-  const watchedDate = form.watch('date');
+  // const watchedDate = form.watch('date');
+  const watchedStartDate = form.watch('startDate');
+const watchedEndDate = form.watch('endDate');
   const isRecurring = form.watch('isRecurring');
   const watchedRecurringEndDate = form.watch('recurringEndDate');
   const watchedRecurringFrequency = form.watch('recurringFrequency');
@@ -119,59 +138,87 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
   );
 
   // Calculate recurring booking totals
-  const recurringInfo = useMemo(() => {
-    if (!isRecurring || !watchedRecurringEndDate || !watchedRecurringFrequency || !watchedDate) {
-      return null;
+const recurringInfo = useMemo(() => {
+  if (
+    !isRecurring ||
+    !watchedRecurringEndDate ||
+    !watchedRecurringFrequency ||
+    !watchedStartDate
+  ) {
+    return null;
+  }
+
+  let occurrences = 0;
+  let currentDate = new Date(watchedStartDate);
+  const endDate = new Date(watchedRecurringEndDate);
+
+  while (currentDate <= endDate) {
+    const shouldCount =
+      watchedRecurringFrequency === 'daily' ||
+      (watchedRecurringFrequency === 'weekly' &&
+        currentDate.getDay() === watchedStartDate.getDay()) ||
+      (watchedRecurringFrequency === 'monthly' &&
+        currentDate.getDate() === watchedStartDate.getDate());
+
+    if (shouldCount) {
+      occurrences++;
     }
 
-    let occurrences = 0;
-    let currentDate = new Date(watchedDate);
-    const endDate = new Date(watchedRecurringEndDate);
-
-    while (currentDate <= endDate) {
-      const shouldCount =
-        watchedRecurringFrequency === 'daily' ||
-        (watchedRecurringFrequency === 'weekly' &&
-          currentDate.getDay() === watchedDate.getDay()) ||
-        (watchedRecurringFrequency === 'monthly' &&
-          currentDate.getDate() === watchedDate.getDate());
-
-      if (shouldCount) {
-        occurrences++;
-      }
-
-      if (watchedRecurringFrequency === 'daily') {
-        currentDate.setDate(currentDate.getDate() + 1);
-      } else if (watchedRecurringFrequency === 'weekly') {
-        currentDate.setDate(currentDate.getDate() + 1);
-      } else {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-      }
+    // Move forward
+    if (watchedRecurringFrequency === 'daily') {
+      currentDate.setDate(currentDate.getDate() + 1);
+    } else if (watchedRecurringFrequency === 'weekly') {
+      currentDate.setDate(currentDate.getDate() + 7);
+    } else {
+      currentDate.setMonth(currentDate.getMonth() + 1);
     }
+  }
 
-    const totalRecurringAmount = totalAmount * occurrences;
-    const totalRecurringBalance = Math.max(0, totalRecurringAmount - watchedAmountPaid);
+  const totalRecurringAmount = totalAmount * occurrences;
+  const totalRecurringBalance = Math.max(
+    0,
+    totalRecurringAmount - watchedAmountPaid
+  );
 
-    return {
-      occurrences,
-      totalRecurringAmount,
-      totalRecurringBalance,
-    };
-  }, [isRecurring, watchedRecurringEndDate, watchedRecurringFrequency, watchedDate, totalAmount, watchedAmountPaid]);
+  return {
+    occurrences,
+    totalRecurringAmount,
+    totalRecurringBalance,
+  };
+}, [
+  isRecurring,
+  watchedRecurringEndDate,
+  watchedRecurringFrequency,
+  watchedStartDate,
+  totalAmount,
+  watchedAmountPaid,
+]);
+
 
   // Check for overlapping bookings
-  const overlapWarning = useMemo(() => {
-    if (!watchedTurfId || !watchedDate || timeError) return null;
-    const conflict = checkBookingOverlap(
-      watchedTurfId,
-      watchedDate,
-      watchedStartTime,
-      watchedEndTime,
-      bookings,
-      booking?.id
-    );
-    return conflict;
-  }, [watchedTurfId, watchedDate, watchedStartTime, watchedEndTime, bookings, booking?.id, timeError]);
+ const overlapWarning = useMemo(() => {
+  if (!watchedTurfId || timeError) return null;
+
+  return checkBookingOverlap(
+    watchedTurfId,
+    watchedStartDate,
+    watchedStartTime,
+    watchedEndDate,
+    watchedEndTime,
+    bookings,
+    booking?.id
+  );
+}, [
+  watchedTurfId,
+  watchedStartDate,
+  watchedStartTime,
+  watchedEndDate,
+  watchedEndTime,
+  bookings,
+  booking?.id,
+  timeError,
+]);
+
 
   useEffect(() => {
     if (booking) {
@@ -181,7 +228,8 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
         turfId: booking.turfId?._id || '',
         customerName: booking.customerName,
         phoneNumber: booking.phoneNumber,
-        date: new Date(booking.date),
+          startDate: new Date(booking.startDate),
+          endDate: new Date(booking.endDate),
         startTime: booking.startTime,
         endTime: booking.endTime,
         pricePerHour:
@@ -200,12 +248,13 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       });
     } else {
       const defaultTurf = turfs ? turfs[0] : null;
-
+const baseDate = selectedDate || new Date();
       form.reset({
         turfId: '',
         customerName: '',
         phoneNumber: '',
-        date: selectedDate || new Date(),
+          startDate: baseDate,
+          endDate: baseDate, // ✅ default same day
         startTime: '10:00',
         endTime: '11:00',
         pricePerHour: 0,
@@ -247,11 +296,13 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       ? recurringInfo.totalRecurringBalance
       : balance;
 
-    const bookingData = {
+    const bookingData = { 
       turfId: data.turfId,
       customerName: data.customerName,
       phoneNumber: data.phoneNumber,
-      date: data.date,
+       startDate: data.startDate,
+  endDate: data.endDate,
+
       startTime: data.startTime,
       endTime: data.endTime,
       pricePerHour: data.pricePerHour,
@@ -261,12 +312,12 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       isRecurring: data.isRecurring,
       status: data.status,
       recurringPattern: data.isRecurring && data.recurringFrequency && data.recurringEndDate
-      ? {
-        frequency: data.recurringFrequency as 'daily' | 'weekly' | 'monthly',
-        dayOfWeek: data.date.getDay(),
-        endDate: data.recurringEndDate,
-      }
-      : undefined,
+        ? {
+            frequency: data.recurringFrequency as 'daily' | 'weekly' | 'monthly',
+              dayOfWeek: data.startDate.getDay(),
+            endDate: data.recurringEndDate,
+          }
+        : undefined,
     };
     
     if (booking) {
@@ -375,7 +426,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter Number" {...field} />
+                      <Input placeholder="Enter 10 digit phone number" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -383,41 +434,68 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
               />
             </div>
 
+          
             <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            'w-full justify-start text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, 'PPP') : 'Pick a date'}
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+  control={form.control}
+  name="startDate"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Start Date</FormLabel>
+      <Popover>
+        <PopoverTrigger asChild>
+          <FormControl>
+            <Button variant="outline" className="w-full justify-start">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {field.value ? format(field.value, 'PPP') : 'Pick start date'}
+            </Button>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={field.value}
+            onSelect={field.onChange}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+
+<FormField
+  control={form.control}
+  name="endDate"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>End Date</FormLabel>
+      <Popover>
+        <PopoverTrigger asChild>
+          <FormControl>
+            <Button variant="outline" className="w-full justify-start">
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {field.value ? format(field.value, 'PPP') : 'Pick end date'}
+            </Button>
+          </FormControl>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={field.value}
+            onSelect={field.onChange}
+            disabled={(date) =>
+              date < form.getValues('startDate')
+            }
+          />
+        </PopoverContent>
+      </Popover>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
 
             <div className="grid grid-cols-2 gap-4">
               <FormField

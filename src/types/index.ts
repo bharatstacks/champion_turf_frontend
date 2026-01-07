@@ -12,10 +12,12 @@ export interface Turf {
 export interface Booking {
   _id: string;
   id: string;
-  turfId: Turf;
+  turfId: string;
   customerName: string;
   phoneNumber: string;
-  date: Date;
+  startDate: Date;
+  endDate: Date;
+
   startTime: string;
   endTime: string;
    pricePerHour?: number; 

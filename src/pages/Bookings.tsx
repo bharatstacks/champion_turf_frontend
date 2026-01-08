@@ -239,7 +239,7 @@ const Bookings = () => {
                         <div>
                           <p>
                             {format(new Date(booking.startDate), 'MMM d, yyyy')}
-                            {booking.startDate.toDateString() !== booking.endDate.toDateString() && (
+                            {booking.startDate !== booking.endDate && (
                               <>
                                 {' '}→ {format(new Date(booking.endDate), 'MMM d, yyyy')}
                               </>

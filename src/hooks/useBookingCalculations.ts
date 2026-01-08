@@ -37,6 +37,7 @@ export function checkBookingOverlap(
   turfId: string,
   date: Date,
   startTime: string,
+  EndDate: Date,
   endTime: string,
   existingBookings: Booking[],
   excludeBookingId?: string

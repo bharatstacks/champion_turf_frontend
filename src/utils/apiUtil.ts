@@ -2,6 +2,7 @@
 
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 const BASE_URL =  'http://localhost:3000/api/'; // Default to localhost if the variable is not set
+// const BASE_URL =  'https://turfbookingserver.onrender.com/api/';
 
 // Define a custom Axios instance
 const apiClient = axios.create({

@@ -107,7 +107,7 @@ const Bookings = () => {
     if (deleteAll && bookingToDelete.recurringGroupId) {
       deleteRecurringGroup(bookingToDelete.recurringGroupId);
     } else {
-      deleteBooking(bookingToDelete.id);
+      deleteBooking(bookingToDelete._id);
     }
 
     setDeleteDialogOpen(false);
@@ -207,12 +207,12 @@ const Bookings = () => {
                 </TableRow>
               ) : (
                 filteredBookings?.map((booking) => {
-                  let turf = turfs?.find((t) => t.id == booking.turfId);
+                  let turf = turfs?.find((t) => t._id == booking.turfId);
                   if(turf === undefined){
-                    turf = turfs?.find((t) => t.id == booking.turfId);
+                    turf = turfs?.find((t) => t._id == booking.turfId);
                   }
                   return (
-                    <TableRow key={booking.id}>
+                    <TableRow key={booking._id}>
                       <TableCell>
                         <div>
                           <p className="font-medium">{booking.customerName}</p>
@@ -227,7 +227,7 @@ const Bookings = () => {
                             className="h-3 w-3 rounded-full"
                             style={{ backgroundColor: turf?.color }}
                           />
-                          <span>{turf?.name  || 'Turf not found'}</span>
+                          <span>{booking?.turfId?.name  || 'Turf not found'}</span>
                           {booking.isRecurring && (
                             <Badge variant="outline" className="text-xs">
                               Recurring

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { Turf, Booking } from '@/types';
 import { mockTurfs, mockBookings } from '@/data/mockData';
 import { addWeeks, addMonths, addDays, isBefore, startOfDay } from 'date-fns';
-import {get, post, put ,del } from '../utils/apiUtil'; // Import the post method from apiUtil
+import { get, post, put, del } from '../utils/apiUtil'; // Import the post method from apiUtil
 
 interface AppContextType {
   turfs: Turf[];
@@ -30,10 +30,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [turfs?.length, bookings?.length]);
 
   const getTurfList = async () => {
-      try {
+    try {
       const response = await get<any>('turf/'); // Use post utility function
       console.log('Turf list fetched successfully:', response);
-      
+
       setTurfs(response?.turfs)
       // Handle success (e.g., show success message, redirect, etc.)
     } catch (error) {
@@ -43,10 +43,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const getBookingList = async () => {
-      try {
+    try {
       const response = await get<any>('booking/'); // Use post utility function
       console.log('Booking list fetched successfully:', response);
-      
+
       setBookings(response?.bookings)
       // Handle success (e.g., show success message, redirect, etc.)
     } catch (error) {
@@ -56,10 +56,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   const getBookingListForUpdate = async () => {
-      try {
+    try {
       const response = await get<any>('booking/'); // Use post utility function
       console.log('Booking list fetched for updates successfully:', response);
-      
+
       setTempBookings(response?.bookings)
       // Handle success (e.g., show success message, redirect, etc.)
     } catch (error) {
@@ -95,7 +95,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateTurf = async (id: string, updates: Partial<Turf>) => {
     const response = await put<any>(`turf/${id}`, { ...updates, _id: id }); // Use post utility function
-      console.log('Turf updated successfully:', response);
+    console.log('Turf updated successfully:', response);
     setTurfs((prev) =>
       prev.map((turf) => (turf._id === id ? { ...turf, ...updates } : turf))
     );
@@ -103,74 +103,83 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteTurf = async (id: string) => {
     const response = await del<any>(`turf/${id}`);
-      console.log('Turf deleted successfully:', response);
+    console.log('Turf deleted successfully:', response);
     setTurfs((prev) => prev.filter((turf) => turf._id !== id));
     // setBookings((prev) => prev.filter((booking) => booking.turfId !== id));
   };
 
   // ---------- BOOKING CRUD ----------
   const addBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>) => {
-    if (booking.isRecurring && booking.recurringPattern) {
+    // if (booking.isRecurring && booking.recurringPattern) {
 
-      const recurringGroupId = generateId(); // FIXED
+    // const recurringGroupId = generateId(); // FIXED
 
-      const generatedBookings: Booking[] = [];
-      let currentDate = startOfDay(new Date(booking.date));
-      const endDate = startOfDay(new Date(booking.recurringPattern.endDate));
+    // const generatedBookings: Booking[] = [];
+    // let currentDate = startOfDay(new Date(booking.startDate));
+    // const endDate = startOfDay(new Date(booking.recurringPattern.endDate));
 
-      while (isBefore(currentDate, endDate) || currentDate.getTime() === endDate.getTime()) {
-        const shouldAdd =
-          booking.recurringPattern.frequency === 'daily' ||
-          (booking.recurringPattern.frequency === 'weekly' &&
-            currentDate.getDay() === booking.recurringPattern.dayOfWeek) ||
-          (booking.recurringPattern.frequency === 'monthly' &&
-            currentDate.getDate() === new Date(booking.date).getDate());
+    // while (isBefore(currentDate, endDate) || currentDate.getTime() === endDate.getTime()) {
+    //   const shouldAdd =
+    //     booking.recurringPattern.frequency === 'daily' ||
+    //     (booking.recurringPattern.frequency === 'weekly' &&
+    //       currentDate.getDay() === booking.recurringPattern.dayOfWeek) ||
+    //     (booking.recurringPattern.frequency === 'monthly' &&
+    //       currentDate.getDate() === new Date(booking.startDate).getDate());
 
-        if (shouldAdd) {
-          generatedBookings.push({
-            ...booking,
-            id: generateId(), // FIXED
-            date: new Date(currentDate),
-            recurringGroupId,
-            createdAt: new Date(),
-          });
-        }
+    //   if (shouldAdd) {
+    //     generatedBookings.push({
+    //       ...booking,
+    //       id: generateId(), // FIXED
+    //       startDate: new Date(currentDate),
+    //       recurringGroupId,
+    //       createdAt: new Date(),
+    //     });
+    //   }
 
-        currentDate =
-          booking.recurringPattern.frequency === 'daily'
-            ? addDays(currentDate, 1)
-            : booking.recurringPattern.frequency === 'weekly'
-              ? addDays(currentDate, 1)
-              : addMonths(currentDate, 1);
-      }
+    //   currentDate = 
+    //     booking.recurringPattern.frequency === 'daily'
+    //       ? addDays(currentDate, 1)
+    //       : booking.recurringPattern.frequency === 'weekly'
+    //         ? addDays(currentDate, 1)
+    //         : addMonths(currentDate, 1);
+    // }
 
-      setBookings((prev) => [...prev, ...generatedBookings]);
+    //   try {
+    //     const response = await post<Booking>('booking/', generatedBookings); // Use post utility function
+    //     console.log('Booking created successfully:', response);
+    //     // Handle success (e.g., show success message, redirect, etc.)
+    //   } catch (error) {
+    //     console.error('Error creating booking:', error);
+    //     // Handle error (e.g., show error message)
+    //   }
 
-    } else {
-      const newBooking: Booking = {
-        ...booking,
-        id: generateId(), // FIXED
-        createdAt: new Date(),
-      };
+    //   setBookings((prev) => [...prev, ...generatedBookings]);
 
-      try {
-        const response = await post<Booking>('booking/', newBooking); // Use post utility function
-        console.log('Booking created successfully:', response);
-        // Handle success (e.g., show success message, redirect, etc.)
-      } catch (error) {
-        console.error('Error creating booking:', error);
-        // Handle error (e.g., show error message)
-      }
+    // } else {
+    const newBooking: Booking = {
+      ...booking,
+      id: generateId(), // FIXED
+      createdAt: new Date(),
+    };
 
-      setBookings((prev) => [...prev, newBooking]);
+    try {
+      const response = await post<Booking>('booking/', newBooking); // Use post utility function
+      console.log('Booking created successfully:', response);
+      // Handle success (e.g., show success message, redirect, etc.)
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      // Handle error (e.g., show error message)
     }
+
+    setBookings((prev) => [...prev, newBooking]);
+    // }
   };
 
   const updateBooking = async (id: string, updates: Partial<Booking>) => {
     try {
       const response = await put<any>(`booking/${id}`, { ...updates, _id: id });
       console.log('Booking updated successfully:', response);
-      if(response.message == "Booking updated successfully"){
+      if (response.message == "Booking updated successfully") {
         getBookingList();
       }
     } catch (error) {
@@ -181,10 +190,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteBooking = async (id: string) => {
     const response = await del<any>(`booking/${id}`);
-      console.log('Booking deleted successfully:', response);
-      if(response.message == "Booking deleted successfully"){
-          getBookingList();
-        }
+    console.log('Booking deleted successfully:', response);
+    if (response.message == "Booking deleted successfully") {
+      getBookingList();
+    }
   };
 
   const deleteRecurringGroup = (groupId: string) => {

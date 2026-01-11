@@ -69,7 +69,7 @@ const Bookings = () => {
       booking?.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking?.phoneNumber?.includes(searchTerm);
     const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
-    const matchesTurf = turfFilter === 'all' || booking.turfId === turfFilter;
+    const matchesTurf = turfFilter === 'all' || booking.turfId._id === turfFilter;
     const matchesRecurring = recurringFilter === null || booking.isRecurring === recurringFilter;
     return matchesSearch && matchesStatus && matchesTurf && matchesRecurring;
   })

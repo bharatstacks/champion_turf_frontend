@@ -10,10 +10,11 @@ interface AppContextType {
   addTurf: (turf: Omit<Turf, 'id' | 'createdAt'>) => void;
   updateTurf: (id: string, turf: Partial<Turf>) => void;
   deleteTurf: (id: string) => void;
-  addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => void;
+  addBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => any;
   updateBooking: (id: string, booking: Partial<Booking>) => void;
   deleteBooking: (id: string) => void;
   deleteRecurringGroup: (groupId: string) => void;
+  getBookingList: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -110,68 +111,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ---------- BOOKING CRUD ----------
   const addBooking = async (booking: Omit<Booking, 'id' | 'createdAt'>) => {
-    // if (booking.isRecurring && booking.recurringPattern) {
 
-    // const recurringGroupId = generateId(); // FIXED
-
-    // const generatedBookings: Booking[] = [];
-    // let currentDate = startOfDay(new Date(booking.startDate));
-    // const endDate = startOfDay(new Date(booking.recurringPattern.endDate));
-
-    // while (isBefore(currentDate, endDate) || currentDate.getTime() === endDate.getTime()) {
-    //   const shouldAdd =
-    //     booking.recurringPattern.frequency === 'daily' ||
-    //     (booking.recurringPattern.frequency === 'weekly' &&
-    //       currentDate.getDay() === booking.recurringPattern.dayOfWeek) ||
-    //     (booking.recurringPattern.frequency === 'monthly' &&
-    //       currentDate.getDate() === new Date(booking.startDate).getDate());
-
-    //   if (shouldAdd) {
-    //     generatedBookings.push({
-    //       ...booking,
-    //       id: generateId(), // FIXED
-    //       startDate: new Date(currentDate),
-    //       recurringGroupId,
-    //       createdAt: new Date(),
-    //     });
-    //   }
-
-    //   currentDate = 
-    //     booking.recurringPattern.frequency === 'daily'
-    //       ? addDays(currentDate, 1)
-    //       : booking.recurringPattern.frequency === 'weekly'
-    //         ? addDays(currentDate, 1)
-    //         : addMonths(currentDate, 1);
-    // }
-
-    //   try {
-    //     const response = await post<Booking>('booking/', generatedBookings); // Use post utility function
-    //     console.log('Booking created successfully:', response);
-    //     // Handle success (e.g., show success message, redirect, etc.)
-    //   } catch (error) {
-    //     console.error('Error creating booking:', error);
-    //     // Handle error (e.g., show error message)
-    //   }
-
-    //   setBookings((prev) => [...prev, ...generatedBookings]);
-
-    // } else {
     const newBooking: Booking = {
       ...booking,
       id: generateId(), // FIXED
       createdAt: new Date(),
     };
 
-    try {
-      const response = await post<Booking>('booking/', newBooking); // Use post utility function
-      console.log('Booking created successfully:', response);
-      // Handle success (e.g., show success message, redirect, etc.)
-    } catch (error) {
-      console.error('Error creating booking:', error);
-      // Handle error (e.g., show error message)
-    }
+    return await post<Booking>('booking/', newBooking); // Use post utility function
 
-    setBookings((prev) => [...prev, newBooking]);
+    // try {
+    //   const response = await post<Booking>('booking/', newBooking); // Use post utility function
+    //   console.log('Booking created successfully:', response);
+    //   // Handle success (e.g., show success message, redirect, etc.)
+    // } catch (error) {
+    //   console.error('Error creating booking:', error);
+    //   // Handle error (e.g., show error message)
+    // }
+
+    // setBookings((prev) => [...prev, newBooking]);
     // }
   };
 
@@ -214,6 +172,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updateBooking,
         deleteBooking,
         deleteRecurringGroup,
+        getBookingList,
       }}
     >
       {children}

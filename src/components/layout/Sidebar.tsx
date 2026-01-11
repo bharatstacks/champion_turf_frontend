@@ -18,7 +18,7 @@ const navItems = [
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { to: '/turfs', icon: MapPin, label: 'Turfs' },
   { to: '/bookings', icon: CalendarPlus, label: 'Bookings' },
-  { to: '/admin/dashboard', icon: Shield, label: 'Admin Panel' }
+  /* { to: '/admin/dashboard', icon: Shield, label: 'Admin Panel' } */
 ];
 
 interface SidebarProps {
@@ -96,14 +96,14 @@ export function Sidebar({ onClose }: SidebarProps) {
               <p className="text-sm font-semibold text-sidebar-accent-foreground">{currentAdmin.name}</p>
             </div>
           )}
-          <NavLink
+         {/*  <NavLink
             to="/settings"
             onClick={onClose}
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-all duration-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
           >
             <Settings className="h-5 w-5" />
             Settings
-          </NavLink>
+          </NavLink> */}
           {currentAdmin && (
             <Button
               onClick={handleLogout}

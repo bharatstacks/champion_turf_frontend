@@ -92,7 +92,7 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ open, onOpenChange, booking, selectedDate }: BookingFormProps) {
-  const { addBooking, updateBooking, turfs, bookings } = useApp();
+  const { addBooking, updateBooking, turfs, bookings, getBookingList } = useApp();
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -295,7 +295,7 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
     }
   }, [watchedTurfId, turfs, form]);
 
-  const onSubmit = (data: BookingFormData) => {
+  const onSubmit = async (data: BookingFormData) => {
     if (timeError) {
       toast.error(timeError);
       return;
@@ -341,10 +341,19 @@ export function BookingForm({ open, onOpenChange, booking, selectedDate }: Booki
       if (overlapWarning) {
         toast.warning(`Warning: This slot overlaps with ${overlapWarning.customerName}'s booking`);
       }
-      addBooking(bookingData);
-      toast.success('Booking created successfully');
+      try {
+        let res = await addBooking(bookingData);
+        toast.success('Booking created successfully');
+        getBookingList()
+        onOpenChange(false);
+      } catch (error) {
+        if (error?.response?.data?.message)
+          toast.error(error?.response?.data?.message);
+        console.error('Error creating booking:', error);
+      }
+
     }
-    onOpenChange(false);
+
   };
 
   return (
